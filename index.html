@@ -1,11 +1,342 @@
 <!DOCTYPE html>
-<html>
-    <head>Miprimerawebonline</head>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego de Multiplicaciones</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <body>
-        <article>
-            <h2>Ronald mamahuevo</h2>
-            <p>Sungota esa</p>
-        </article>
-    </body>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #4f46e5, #06b6d4);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    color: #1e1b4b;
+    margin-bottom: 10px;
+  }
+
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  .stats span#score { color: #16a34a; }
+  .stats span#wrong { color: #dc2626; }
+
+  .progress-bar {
+    height: 8px;
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 25px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #06b6d4, #4f46e5);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .question {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 25px;
+    min-height: 60px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .option-btn {
+    padding: 18px;
+    font-size: 1.4rem;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    background: #f9fafb;
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: #4f46e5;
+    background: #eef2ff;
+    transform: translateY(-2px);
+  }
+
+  .option-btn.correct {
+    background: #22c55e;
+    border-color: #16a34a;
+    color: #fff;
+  }
+
+  .option-btn.incorrect {
+    background: #ef4444;
+    border-color: #dc2626;
+    color: #fff;
+  }
+
+  .option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+  }
+
+  .feedback {
+    min-height: 28px;
+    margin-top: 18px;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .feedback.correct-text { color: #16a34a; }
+  .feedback.incorrect-text { color: #dc2626; }
+
+  .next-btn {
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+  }
+
+  .next-btn:hover { background: #4338ca; }
+
+  .final-screen {
+    display: none;
+  }
+
+  .final-screen h2 {
+    font-size: 1.8rem;
+    color: #1e1b4b;
+    margin-bottom: 10px;
+  }
+
+  .final-screen p {
+    font-size: 1.1rem;
+    color: #4b5563;
+    margin-bottom: 25px;
+  }
+
+  .restart-btn {
+    padding: 14px 28px;
+    background: #06b6d4;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .restart-btn:hover { background: #0891b2; }
+
+  .emoji { font-size: 3rem; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div id="gameScreen">
+    <h1>🧮 Multiplicaciones (0 a 5)</h1>
+    <div class="stats">
+      <span>Pregunta: <span id="qnum">1</span>/<span id="qtotal">10</span></span>
+      <span id="score">✔️ 0</span>
+      <span id="wrong">❌ 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="question" id="questionText">? x ? = ?</div>
+
+    <div class="options" id="optionsContainer"></div>
+
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn">Siguiente ➜</button>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="emoji" id="finalEmoji">🎉</div>
+    <h2 id="finalTitle">¡Juego terminado!</h2>
+    <p id="finalText">Obtuviste 0 de 10 correctas</p>
+    <button class="restart-btn" onclick="restartGame()">Jugar de nuevo</button>
+  </div>
+
+</div>
+
+<script>
+  const TOTAL_QUESTIONS = 10;
+  let currentQuestion = 0;
+  let score = 0;
+  let wrongCount = 0;
+  let currentAnswer = null;
+  let answered = false;
+  let questions = [];
+
+  function generateQuestions() {
+    questions = [];
+    for (let i = 0; i < TOTAL_QUESTIONS; i++) {
+      const a = Math.floor(Math.random() * 6); // 0-5
+      const b = Math.floor(Math.random() * 6); // 0-5
+      questions.push({ a, b, answer: a * b });
+    }
+  }
+
+  function generateOptions(correct) {
+    const options = new Set([correct]);
+    while (options.size < 4) {
+      // generar distractores cercanos al resultado correcto
+      const offset = Math.floor(Math.random() * 9) - 4; // -4 a 4
+      let candidate = correct + offset;
+      if (candidate < 0) candidate = correct + Math.abs(offset) + 1;
+      if (candidate > 25) candidate = correct - Math.abs(offset) - 1;
+      if (candidate < 0) candidate = Math.floor(Math.random() * 26);
+      options.add(candidate);
+    }
+    return shuffle(Array.from(options));
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function loadQuestion() {
+    answered = false;
+    const q = questions[currentQuestion];
+    currentAnswer = q.answer;
+
+    document.getElementById('qnum').textContent = currentQuestion + 1;
+    document.getElementById('questionText').textContent = `${q.a} x ${q.b} = ?`;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('nextBtn').style.display = 'none';
+
+    const progressPct = (currentQuestion / TOTAL_QUESTIONS) * 100;
+    document.getElementById('progressFill').style.width = progressPct + '%';
+
+    const optionsContainer = document.getElementById('optionsContainer');
+    optionsContainer.innerHTML = '';
+    const opts = generateOptions(q.answer);
+
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => checkAnswer(opt, btn);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(selected, btnEl) {
+    if (answered) return;
+    answered = true;
+
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    const feedback = document.getElementById('feedback');
+
+    if (selected === currentAnswer) {
+      score++;
+      btnEl.classList.add('correct');
+      feedback.textContent = '¡Correcto! 🎉';
+      feedback.className = 'feedback correct-text';
+    } else {
+      wrongCount++;
+      btnEl.classList.add('incorrect');
+      feedback.textContent = `Incorrecto. La respuesta era ${currentAnswer}`;
+      feedback.className = 'feedback incorrect-text';
+      buttons.forEach(b => {
+        if (parseInt(b.textContent) === currentAnswer) b.classList.add('correct');
+      });
+    }
+
+    document.getElementById('score').textContent = '✔️ ' + score;
+    document.getElementById('wrong').textContent = '❌ ' + wrongCount;
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    currentQuestion++;
+    if (currentQuestion < TOTAL_QUESTIONS) {
+      loadQuestion();
+    } else {
+      showFinalScreen();
+    }
+  });
+
+  function showFinalScreen() {
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('gameScreen').style.display = 'none';
+    document.getElementById('finalScreen').style.display = 'block';
+
+    const pct = (score / TOTAL_QUESTIONS) * 100;
+    let emoji = '🎉';
+    let title = '¡Muy bien!';
+    if (pct === 100) { emoji = '🏆'; title = '¡Perfecto!'; }
+    else if (pct >= 70) { emoji = '🎉'; title = '¡Muy bien hecho!'; }
+    else if (pct >= 40) { emoji = '💪'; title = '¡Sigue practicando!'; }
+    else { emoji = '📚'; title = '¡A repasar las tablas!'; }
+
+    document.getElementById('finalEmoji').textContent = emoji;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').textContent = `Obtuviste ${score} de ${TOTAL_QUESTIONS} correctas (${wrongCount} incorrectas)`;
+  }
+
+  function restartGame() {
+    currentQuestion = 0;
+    score = 0;
+    wrongCount = 0;
+    document.getElementById('score').textContent = '✔️ 0';
+    document.getElementById('wrong').textContent = '❌ 0';
+    document.getElementById('gameScreen').style.display = 'block';
+    document.getElementById('finalScreen').style.display = 'none';
+    generateQuestions();
+    loadQuestion();
+  }
+
+  // Iniciar juego
+  document.getElementById('qtotal').textContent = TOTAL_QUESTIONS;
+  generateQuestions();
+  loadQuestion();
+</script>
+
+</body>
 </html>
