@@ -3,340 +3,451 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Juego de Multiplicaciones</title>
+<title>Melo Caramelo · El Reto Dulce</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #4f46e5, #06b6d4);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+  :root{
+    --cream:#FFF3DD;
+    --caramel:#C97A2C;
+    --caramel-dark:#8A4B1E;
+    --choco:#3B2412;
+    --melon:#8FBF3F;
+    --melon-dark:#5E8A26;
+    --rind:#E8543A;
+    --gold:#F2B33D;
+    --bad:#D6483C;
+    --good:#4E9350;
+    --radius:22px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(242,179,61,.35), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(143,191,63,.25), transparent 45%),
+      var(--cream);
+    font-family: "Segoe UI Rounded", "Trebuchet MS", "Verdana", sans-serif;
+    color:var(--choco);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .stage{
+    width:100%;
+    max-width:640px;
+  }
+  h1{
+    font-size:clamp(28px,6vw,42px);
+    text-align:center;
+    margin:0 0 2px;
+    letter-spacing:-0.5px;
+    color:var(--caramel-dark);
+    text-shadow: 2px 2px 0 var(--gold);
+  }
+  .sub{
+    text-align:center;
+    margin:0 0 18px;
+    font-size:14px;
+    color:var(--caramel-dark);
+    opacity:.85;
+    font-weight:600;
   }
 
-  .card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 30px;
-    width: 100%;
-    max-width: 420px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-    text-align: center;
+  /* ===== Panel principal ===== */
+  .card{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:0 14px 0 rgba(138,75,30,.15), 0 20px 40px rgba(59,36,18,.15);
+    border:3px solid var(--caramel);
+    padding:22px;
+    position:relative;
+    overflow:hidden;
   }
 
-  h1 {
-    font-size: 1.5rem;
-    color: #1e1b4b;
-    margin-bottom: 10px;
+  /* ===== Melón de caramelo (elemento firma) ===== */
+  .melon-wrap{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:16px;
+  }
+  .melon{
+    position:relative;
+    width:96px;
+    height:96px;
+    border-radius:50%;
+    background:
+      repeating-linear-gradient(100deg, var(--melon) 0 10px, var(--melon-dark) 10px 13px);
+    flex:0 0 auto;
+    box-shadow: inset -8px -10px 16px rgba(0,0,0,.18), inset 6px 6px 10px rgba(255,255,255,.35);
+    transition: transform .25s;
+  }
+  .melon::before{ /* rebanada */
+    content:"";
+    position:absolute;
+    inset:10px;
+    border-radius:50%;
+    background: var(--gold);
+    opacity:.0;
+  }
+  .melon .cara{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+  }
+  .caramelo-drip{
+    position:absolute;
+    top:-6px; left:0; right:0;
+    height:0%;
+    background:
+      linear-gradient(180deg, var(--gold), var(--caramel) 60%, var(--caramel-dark));
+    border-radius:50% 50% 0 0 / 40px;
+    transition:height .5s ease;
+    opacity:.95;
+  }
+  .melon.pop{ transform: scale(1.12) rotate(-4deg); }
+  .melon.shake{ animation: shake .4s; }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-6px) rotate(-3deg);}
+    75%{transform:translateX(6px) rotate(3deg);}
   }
 
-  .stats {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.95rem;
-    color: #4b5563;
-    margin-bottom: 20px;
-    font-weight: 600;
+  .stats{ flex:1; }
+  .meter-row{
+    display:flex; justify-content:space-between; font-size:12px; font-weight:700;
+    color:var(--caramel-dark); margin-bottom:4px; text-transform:uppercase; letter-spacing:.5px;
+  }
+  .meter{
+    height:14px; background:#F1E2C6; border-radius:20px; overflow:hidden; border:2px solid var(--caramel);
+  }
+  .meter-fill{
+    height:100%; width:0%; background:linear-gradient(90deg,var(--gold),var(--caramel));
+    transition:width .4s ease;
+  }
+  .badges{ display:flex; gap:10px; margin-top:8px; font-size:13px; font-weight:700; flex-wrap:wrap;}
+  .badge{ background:var(--cream); border:2px solid var(--caramel); padding:3px 10px; border-radius:20px;}
+  .badge.streak{ color:var(--rind); border-color:var(--rind); }
+
+  /* ===== Barra de tiempo ===== */
+  .timebar{
+    height:8px; width:100%; background:#F1E2C6; border-radius:10px; overflow:hidden; margin-bottom:16px;
+  }
+  .timebar-fill{
+    height:100%; width:100%; background:var(--rind); transition:width .1s linear;
   }
 
-  .stats span#score { color: #16a34a; }
-  .stats span#wrong { color: #dc2626; }
-
-  .progress-bar {
-    height: 8px;
-    width: 100%;
-    background: #e5e7eb;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 25px;
+  /* ===== Pregunta ===== */
+  .cat{
+    display:inline-block; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+    background:var(--choco); color:var(--gold); padding:4px 12px; border-radius:20px; margin-bottom:10px;
   }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #06b6d4, #4f46e5);
-    width: 0%;
-    transition: width 0.3s ease;
+  .pregunta{
+    font-size:clamp(18px,4.2vw,22px); font-weight:800; line-height:1.35; margin:0 0 18px; color:var(--choco);
+    min-height:2.6em;
   }
-
-  .question {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #111827;
-    margin-bottom: 25px;
-    min-height: 60px;
+  .opciones{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
   }
-
-  .options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+  @media(max-width:420px){ .opciones{ grid-template-columns:1fr; } }
+  .opcion{
+    border:2.5px solid var(--caramel-dark);
+    background:var(--cream);
+    border-radius:14px;
+    padding:13px 12px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--choco);
+    cursor:pointer;
+    text-align:left;
+    transition:transform .12s, background .2s, box-shadow .2s;
+    box-shadow:0 4px 0 var(--caramel-dark);
   }
+  .opcion:hover{ transform:translateY(-2px); background:#fff; }
+  .opcion:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--caramel-dark); }
+  .opcion:disabled{ cursor:default; }
+  .opcion.correcta{ background:var(--good); color:#fff; border-color:var(--good); box-shadow:0 4px 0 #2f5f30;}
+  .opcion.incorrecta{ background:var(--bad); color:#fff; border-color:var(--bad); box-shadow:0 4px 0 #7d2822;}
 
-  .option-btn {
-    padding: 18px;
-    font-size: 1.4rem;
-    font-weight: 600;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    background: #f9fafb;
-    color: #1f2937;
-    cursor: pointer;
-    transition: all 0.15s ease;
+  .feedback{
+    min-height:26px; font-weight:800; text-align:center; margin:14px 0 4px; font-size:14px;
   }
+  .feedback.good{ color:var(--good); }
+  .feedback.bad{ color:var(--bad); }
 
-  .option-btn:hover:not(:disabled) {
-    border-color: #4f46e5;
-    background: #eef2ff;
-    transform: translateY(-2px);
+  .footer-row{
+    display:flex; justify-content:center; margin-top:8px;
   }
-
-  .option-btn.correct {
-    background: #22c55e;
-    border-color: #16a34a;
-    color: #fff;
+  .btn{
+    background:var(--caramel-dark); color:#fff; border:none; padding:11px 26px; border-radius:20px;
+    font-weight:800; font-size:14px; cursor:pointer; box-shadow:0 4px 0 #5c3212; letter-spacing:.3px;
   }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 #5c3212; }
 
-  .option-btn.incorrect {
-    background: #ef4444;
-    border-color: #dc2626;
-    color: #fff;
+  /* ===== Pantalla fin ===== */
+  .end{ text-align:center; }
+  .end h2{ font-size:26px; color:var(--caramel-dark); margin-bottom:4px;}
+  .end p{ margin:4px 0 18px; font-weight:600; }
+  .end .score-big{ font-size:52px; font-weight:900; color:var(--rind); margin:6px 0;}
+
+  .start{ text-align:center; }
+  .start p{ font-weight:600; line-height:1.5; margin-bottom:20px; }
+  select{
+    padding:10px 14px; border-radius:14px; border:2px solid var(--caramel-dark); font-weight:700;
+    font-size:14px; margin-bottom:18px; background:var(--cream); color:var(--choco);
   }
-
-  .option-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.9;
-  }
-
-  .feedback {
-    min-height: 28px;
-    margin-top: 18px;
-    font-weight: 700;
-    font-size: 1.05rem;
-  }
-
-  .feedback.correct-text { color: #16a34a; }
-  .feedback.incorrect-text { color: #dc2626; }
-
-  .next-btn {
-    margin-top: 15px;
-    padding: 12px 24px;
-    background: #4f46e5;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: none;
-  }
-
-  .next-btn:hover { background: #4338ca; }
-
-  .final-screen {
-    display: none;
-  }
-
-  .final-screen h2 {
-    font-size: 1.8rem;
-    color: #1e1b4b;
-    margin-bottom: 10px;
-  }
-
-  .final-screen p {
-    font-size: 1.1rem;
-    color: #4b5563;
-    margin-bottom: 25px;
-  }
-
-  .restart-btn {
-    padding: 14px 28px;
-    background: #06b6d4;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .restart-btn:hover { background: #0891b2; }
-
-  .emoji { font-size: 3rem; margin-bottom: 10px; }
 </style>
 </head>
 <body>
+<div class="stage">
+  <h1>🍈 Melo Caramelo</h1>
+  <p class="sub">Baña tu melón en caramelo respondiendo bien &mdash; cada acierto le suma una capa dulce</p>
 
-<div class="card">
+  <div class="card">
 
-  <div id="gameScreen">
-    <h1>🧮 Multiplicaciones (0 a 5)</h1>
-    <div class="stats">
-      <span>Pregunta: <span id="qnum">1</span>/<span id="qtotal">10</span></span>
-      <span id="score">✔️ 0</span>
-      <span id="wrong">❌ 0</span>
+    <!-- PANTALLA DE INICIO -->
+    <div id="pantallaInicio" class="start">
+      <div class="melon-wrap" style="justify-content:center;">
+        <div class="melon" id="melonInicio"><div class="caramelo-drip" style="height:35%"></div><div class="cara">🙂</div></div>
+      </div>
+      <p>Responde preguntas de <b>matemáticas, ciencia, geografía e historia</b> antes de que se acabe el tiempo. Encadena aciertos para ganar multiplicador de caramelo. ¿Cuántas capas puedes lograr?</p>
+      <div>
+        <select id="dificultad">
+          <option value="facil">Nivel: Fácil 🍬</option>
+          <option value="normal" selected>Nivel: Normal 🍯</option>
+          <option value="dificil">Nivel: Difícil 🔥</option>
+        </select>
+      </div>
+      <div><button class="btn" onclick="iniciarJuego()">Empezar a caramelizar</button></div>
     </div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-    <div class="question" id="questionText">? x ? = ?</div>
+    <!-- PANTALLA DE JUEGO -->
+    <div id="pantallaJuego" style="display:none;">
+      <div class="melon-wrap">
+        <div class="melon" id="melon"><div class="caramelo-drip" id="drip" style="height:0%"></div><div class="cara" id="cara">🙂</div></div>
+        <div class="stats">
+          <div class="meter-row"><span>Capa de caramelo</span><span id="puntosTxt">0</span></div>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+          <div class="badges">
+            <div class="badge">Pregunta <span id="numPregunta">1</span>/<span id="totalPreguntas">10</span></div>
+            <div class="badge streak" id="rachaBadge" style="display:none;">🔥 Racha x<span id="rachaVal">0</span></div>
+          </div>
+        </div>
+      </div>
 
-    <div class="options" id="optionsContainer"></div>
+      <div class="timebar"><div class="timebar-fill" id="timeFill"></div></div>
 
-    <div class="feedback" id="feedback"></div>
-    <button class="next-btn" id="nextBtn">Siguiente ➜</button>
+      <div class="cat" id="categoria">Categoría</div>
+      <p class="pregunta" id="pregunta">Cargando...</p>
+      <div class="opciones" id="opciones"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- PANTALLA FINAL -->
+    <div id="pantallaFin" class="end" style="display:none;">
+      <div class="melon-wrap" style="justify-content:center;">
+        <div class="melon" id="melonFin"><div class="caramelo-drip" id="dripFin" style="height:0%"></div><div class="cara" id="caraFin">🎉</div></div>
+      </div>
+      <h2 id="tituloFin">¡Melón caramelizado!</h2>
+      <div class="score-big" id="puntosFinales">0</div>
+      <p id="resumenFin">Aciertos: 0 / 0 · Mejor racha: 0</p>
+      <button class="btn" onclick="volverInicio()">Jugar otra vez</button>
+    </div>
+
   </div>
-
-  <div class="final-screen" id="finalScreen">
-    <div class="emoji" id="finalEmoji">🎉</div>
-    <h2 id="finalTitle">¡Juego terminado!</h2>
-    <p id="finalText">Obtuviste 0 de 10 correctas</p>
-    <button class="restart-btn" onclick="restartGame()">Jugar de nuevo</button>
-  </div>
-
 </div>
 
 <script>
-  const TOTAL_QUESTIONS = 10;
-  let currentQuestion = 0;
-  let score = 0;
-  let wrongCount = 0;
-  let currentAnswer = null;
-  let answered = false;
-  let questions = [];
+/* ============ BANCO DE PREGUNTAS ============ */
+const bancoTrivia = [
+  {cat:"Ciencia", p:"¿Qué gas necesitan las plantas para hacer fotosíntesis?", o:["Oxígeno","Dióxido de carbono","Nitrógeno","Hidrógeno"], r:1},
+  {cat:"Ciencia", p:"¿Cuál es el órgano que bombea la sangre en el cuerpo humano?", o:["El hígado","El corazón","El pulmón","El riñón"], r:1},
+  {cat:"Ciencia", p:"¿Cuál es el planeta más cercano al Sol?", o:["Venus","Marte","Mercurio","Tierra"], r:2},
+  {cat:"Ciencia", p:"¿En qué estado de la materia las partículas están más ordenadas?", o:["Gaseoso","Líquido","Sólido","Plasma"], r:2},
+  {cat:"Ciencia", p:"¿Cómo se llama la fuerza que nos mantiene pegados al suelo?", o:["Fricción","Gravedad","Inercia","Presión"], r:1},
+  {cat:"Geografía", p:"¿Cuál es el río más largo del mundo?", o:["Nilo","Amazonas","Misisipi","Yangtsé"], r:1},
+  {cat:"Geografía", p:"¿Cuál es el país con más habitantes del mundo?", o:["India","China","EE. UU.","Indonesia"], r:0},
+  {cat:"Geografía", p:"¿En qué continente está Colombia?", o:["África","Asia","América","Oceanía"], r:2},
+  {cat:"Geografía", p:"¿Cuál es el desierto más grande del mundo?", o:["Sahara","Gobi","Atacama","Antártico"], r:3},
+  {cat:"Geografía", p:"¿Cuál es la capital de Japón?", o:["Seúl","Pekín","Tokio","Bangkok"], r:2},
+  {cat:"Historia", p:"¿En qué año llegó Colón a América?", o:["1392","1492","1592","1290"], r:1},
+  {cat:"Historia", p:"¿Qué civilización construyó Machu Picchu?", o:["Azteca","Maya","Inca","Olmeca"], r:2},
+  {cat:"Historia", p:"¿Quién fue el libertador de gran parte de Sudamérica?", o:["Simón Bolívar","José de San Martín","Hernán Cortés","Francisco Pizarro"], r:0},
+  {cat:"Historia", p:"¿En qué siglo comenzó la Revolución Industrial?", o:["XVI","XVII","XVIII","XX"], r:2},
+  {cat:"Lengua", p:"¿Cuál de estas palabras es un adjetivo?", o:["Correr","Rápido","Casa","Ayer"], r:1},
+  {cat:"Lengua", p:"¿Cuál es el plural correcto de 'lápiz'?", o:["Lapizes","Lápizes","Lápices","Lapices"], r:2},
+];
 
-  function generateQuestions() {
-    questions = [];
-    for (let i = 0; i < TOTAL_QUESTIONS; i++) {
-      const a = Math.floor(Math.random() * 6); // 0-5
-      const b = Math.floor(Math.random() * 6); // 0-5
-      questions.push({ a, b, answer: a * b });
-    }
+/* Genera preguntas de matemáticas según dificultad */
+function generarMate(dif){
+  let a,b,op,resultado,texto;
+  const rango = dif==="facil" ? 10 : dif==="normal" ? 25 : 60;
+  a = Math.floor(Math.random()*rango)+1;
+  b = Math.floor(Math.random()*rango)+1;
+  const ops = dif==="facil" ? ["+","-"] : dif==="normal" ? ["+","-","x"] : ["+","-","x","÷"];
+  op = ops[Math.floor(Math.random()*ops.length)];
+  if(op==="+"){ resultado=a+b; texto=`${a} + ${b}`; }
+  else if(op==="-"){ if(b>a)[a,b]=[b,a]; resultado=a-b; texto=`${a} - ${b}`; }
+  else if(op==="x"){ a=Math.floor(Math.random()*12)+2; b=Math.floor(Math.random()*12)+2; resultado=a*b; texto=`${a} × ${b}`; }
+  else { b=Math.floor(Math.random()*10)+2; resultado=Math.floor(Math.random()*10)+2; a=b*resultado; texto=`${a} ÷ ${b}`; }
+  const opciones=[resultado];
+  while(opciones.length<4){
+    const delta = Math.floor(Math.random()*9)-4;
+    const falso = resultado+delta+(delta===0?3:0);
+    if(!opciones.includes(falso) && falso>=0) opciones.push(falso);
   }
+  opciones.sort(()=>Math.random()-0.5);
+  return {cat:"Matemáticas", p:`¿Cuánto es ${texto}?`, o:opciones.map(String), r:opciones.indexOf(resultado)};
+}
 
-  function generateOptions(correct) {
-    const options = new Set([correct]);
-    while (options.size < 4) {
-      // generar distractores cercanos al resultado correcto
-      const offset = Math.floor(Math.random() * 9) - 4; // -4 a 4
-      let candidate = correct + offset;
-      if (candidate < 0) candidate = correct + Math.abs(offset) + 1;
-      if (candidate > 25) candidate = correct - Math.abs(offset) - 1;
-      if (candidate < 0) candidate = Math.floor(Math.random() * 26);
-      options.add(candidate);
-    }
-    return shuffle(Array.from(options));
+/* ============ ESTADO DEL JUEGO ============ */
+let preguntas=[], idx=0, puntos=0, racha=0, mejorRacha=0, aciertos=0, dificultad="normal";
+let TOTAL_PREGUNTAS=10, tiempoLimite=15, tiempoRestante, timerInterval;
+
+function construirPreguntas(){
+  const pool=[];
+  const triviaMezclada=[...bancoTrivia].sort(()=>Math.random()-0.5);
+  for(let i=0;i<TOTAL_PREGUNTAS;i++){
+    if(i%2===0) pool.push(generarMate(dificultad));
+    else pool.push(triviaMezclada[i % triviaMezclada.length]);
   }
+  return pool;
+}
 
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
+function iniciarJuego(){
+  dificultad = document.getElementById("dificultad").value;
+  tiempoLimite = dificultad==="facil" ? 20 : dificultad==="normal" ? 15 : 10;
+  preguntas = construirPreguntas();
+  idx=0; puntos=0; racha=0; mejorRacha=0; aciertos=0;
+  document.getElementById("totalPreguntas").textContent = TOTAL_PREGUNTAS;
+  document.getElementById("pantallaInicio").style.display="none";
+  document.getElementById("pantallaFin").style.display="none";
+  document.getElementById("pantallaJuego").style.display="block";
+  actualizarMedidor();
+  mostrarPregunta();
+}
 
-  function loadQuestion() {
-    answered = false;
-    const q = questions[currentQuestion];
-    currentAnswer = q.answer;
+function mostrarPregunta(){
+  if(idx>=preguntas.length){ return terminarJuego(); }
+  const q = preguntas[idx];
+  document.getElementById("numPregunta").textContent = idx+1;
+  document.getElementById("categoria").textContent = q.cat;
+  document.getElementById("pregunta").textContent = q.p;
+  document.getElementById("feedback").textContent = "";
+  document.getElementById("feedback").className = "feedback";
 
-    document.getElementById('qnum').textContent = currentQuestion + 1;
-    document.getElementById('questionText').textContent = `${q.a} x ${q.b} = ?`;
-    document.getElementById('feedback').textContent = '';
-    document.getElementById('feedback').className = 'feedback';
-    document.getElementById('nextBtn').style.display = 'none';
-
-    const progressPct = (currentQuestion / TOTAL_QUESTIONS) * 100;
-    document.getElementById('progressFill').style.width = progressPct + '%';
-
-    const optionsContainer = document.getElementById('optionsContainer');
-    optionsContainer.innerHTML = '';
-    const opts = generateOptions(q.answer);
-
-    opts.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.textContent = opt;
-      btn.onclick = () => checkAnswer(opt, btn);
-      optionsContainer.appendChild(btn);
-    });
-  }
-
-  function checkAnswer(selected, btnEl) {
-    if (answered) return;
-    answered = true;
-
-    const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(b => b.disabled = true);
-
-    const feedback = document.getElementById('feedback');
-
-    if (selected === currentAnswer) {
-      score++;
-      btnEl.classList.add('correct');
-      feedback.textContent = '¡Correcto! 🎉';
-      feedback.className = 'feedback correct-text';
-    } else {
-      wrongCount++;
-      btnEl.classList.add('incorrect');
-      feedback.textContent = `Incorrecto. La respuesta era ${currentAnswer}`;
-      feedback.className = 'feedback incorrect-text';
-      buttons.forEach(b => {
-        if (parseInt(b.textContent) === currentAnswer) b.classList.add('correct');
-      });
-    }
-
-    document.getElementById('score').textContent = '✔️ ' + score;
-    document.getElementById('wrong').textContent = '❌ ' + wrongCount;
-    document.getElementById('nextBtn').style.display = 'inline-block';
-  }
-
-  document.getElementById('nextBtn').addEventListener('click', () => {
-    currentQuestion++;
-    if (currentQuestion < TOTAL_QUESTIONS) {
-      loadQuestion();
-    } else {
-      showFinalScreen();
-    }
+  const cont = document.getElementById("opciones");
+  cont.innerHTML="";
+  q.o.forEach((op, i)=>{
+    const btn = document.createElement("button");
+    btn.className="opcion";
+    btn.textContent = op;
+    btn.onclick = ()=>responder(i, btn);
+    cont.appendChild(btn);
   });
 
-  function showFinalScreen() {
-    document.getElementById('progressFill').style.width = '100%';
-    document.getElementById('gameScreen').style.display = 'none';
-    document.getElementById('finalScreen').style.display = 'block';
+  tiempoRestante = tiempoLimite;
+  actualizarBarraTiempo();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    tiempoRestante -= 0.1;
+    actualizarBarraTiempo();
+    if(tiempoRestante<=0){
+      clearInterval(timerInterval);
+      responder(-1, null); // se acabó el tiempo
+    }
+  }, 100);
+}
 
-    const pct = (score / TOTAL_QUESTIONS) * 100;
-    let emoji = '🎉';
-    let title = '¡Muy bien!';
-    if (pct === 100) { emoji = '🏆'; title = '¡Perfecto!'; }
-    else if (pct >= 70) { emoji = '🎉'; title = '¡Muy bien hecho!'; }
-    else if (pct >= 40) { emoji = '💪'; title = '¡Sigue practicando!'; }
-    else { emoji = '📚'; title = '¡A repasar las tablas!'; }
+function actualizarBarraTiempo(){
+  const pct = Math.max(0, (tiempoRestante/tiempoLimite)*100);
+  document.getElementById("timeFill").style.width = pct+"%";
+  document.getElementById("timeFill").style.background = pct<30 ? "var(--bad)" : "var(--rind)";
+}
 
-    document.getElementById('finalEmoji').textContent = emoji;
-    document.getElementById('finalTitle').textContent = title;
-    document.getElementById('finalText').textContent = `Obtuviste ${score} de ${TOTAL_QUESTIONS} correctas (${wrongCount} incorrectas)`;
+function responder(i, btnEl){
+  clearInterval(timerInterval);
+  const q = preguntas[idx];
+  const botones = document.querySelectorAll(".opcion");
+  botones.forEach(b=>b.disabled=true);
+
+  const correcta = i===q.r;
+  if(botones[q.r]) botones[q.r].classList.add("correcta");
+  if(!correcta && btnEl) btnEl.classList.add("incorrecta");
+
+  const fb = document.getElementById("feedback");
+  const melon = document.getElementById("melon");
+
+  if(correcta){
+    racha++;
+    mejorRacha = Math.max(mejorRacha, racha);
+    aciertos++;
+    const bonusTiempo = Math.max(0, Math.round(tiempoRestante));
+    const multiplicador = 1 + Math.min(racha-1, 4)*0.25;
+    const ganado = Math.round((10 + bonusTiempo) * multiplicador);
+    puntos += ganado;
+    fb.textContent = `¡Correcto! +${ganado} caramelo ${racha>1 ? "🔥 racha x"+multiplicador.toFixed(2) : ""}`;
+    fb.classList.add("good");
+    melon.classList.add("pop");
+    setTimeout(()=>melon.classList.remove("pop"), 300);
+    document.getElementById("cara").textContent = racha>=3 ? "😄" : "🙂";
+  } else {
+    racha=0;
+    fb.textContent = i===-1 ? "¡Se acabó el tiempo! Sin caramelo esta vez." : "Ups, no era esa. Sin caramelo esta vez.";
+    fb.classList.add("bad");
+    melon.classList.add("shake");
+    setTimeout(()=>melon.classList.remove("shake"), 400);
+    document.getElementById("cara").textContent = "😟";
   }
 
-  function restartGame() {
-    currentQuestion = 0;
-    score = 0;
-    wrongCount = 0;
-    document.getElementById('score').textContent = '✔️ 0';
-    document.getElementById('wrong').textContent = '❌ 0';
-    document.getElementById('gameScreen').style.display = 'block';
-    document.getElementById('finalScreen').style.display = 'none';
-    generateQuestions();
-    loadQuestion();
-  }
+  actualizarMedidor();
 
-  // Iniciar juego
-  document.getElementById('qtotal').textContent = TOTAL_QUESTIONS;
-  generateQuestions();
-  loadQuestion();
+  setTimeout(()=>{
+    idx++;
+    mostrarPregunta();
+  }, 1200);
+}
+
+function actualizarMedidor(){
+  document.getElementById("puntosTxt").textContent = puntos;
+  const pct = Math.min(100, (puntos/ (TOTAL_PREGUNTAS*22)) *100 );
+  document.getElementById("meterFill").style.width = pct+"%";
+  document.getElementById("drip").style.height = pct+"%";
+  const rachaBadge = document.getElementById("rachaBadge");
+  if(racha>1){
+    rachaBadge.style.display="inline-block";
+    document.getElementById("rachaVal").textContent = racha;
+  } else {
+    rachaBadge.style.display="none";
+  }
+}
+
+function terminarJuego(){
+  document.getElementById("pantallaJuego").style.display="none";
+  document.getElementById("pantallaFin").style.display="block";
+  document.getElementById("puntosFinales").textContent = puntos;
+  document.getElementById("resumenFin").textContent = `Aciertos: ${aciertos} / ${TOTAL_PREGUNTAS} · Mejor racha: ${mejorRacha}`;
+
+  const pct = Math.min(100, (puntos/ (TOTAL_PREGUNTAS*22)) *100 );
+  document.getElementById("dripFin").style.height = pct+"%";
+
+  let titulo, cara;
+  if(pct>=85){ titulo="¡Melón perfectamente caramelizado! 🏆"; cara="🤩"; }
+  else if(pct>=55){ titulo="¡Buen trabajo, quedó delicioso! 🍯"; cara="😋"; }
+  else if(pct>=25){ titulo="Le faltó un poco de caramelo... 🍬"; cara="🙂"; }
+  else { titulo="El melón se quedó sin bañar 😅"; cara="😬"; }
+  document.getElementById("tituloFin").textContent = titulo;
+  document.getElementById("caraFin").textContent = cara;
+}
+
+function volverInicio(){
+  document.getElementById("pantallaFin").style.display="none";
+  document.getElementById("pantallaInicio").style.display="block";
+}
 </script>
-
 </body>
 </html>
